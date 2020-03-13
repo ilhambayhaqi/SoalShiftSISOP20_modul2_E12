@@ -24,6 +24,7 @@ void download(char path[]){
 	time_t t = time(NULL);
 	int width = (int)(t % 1000) + 100;
 	
+	int signal;
 	struct tm currTime = *localtime(&t);
 	if(fork() == 0){
 		int signal;
@@ -44,29 +45,49 @@ void download(char path[]){
 		char *hehe[] = {"mv", currFileName, fileName, NULL};
 		execv("/bin/mv", hehe);
 	}
+	wait(&signal);
 }
 
+/*
 void makeZip(char path[]){
 	char dir[100];
 	sprintf(dir, "./%s", path);
 	
 	if(fork() == 0){
+		chdir(dir);
 		char zipName[100], targetZip[100];
-		sprintf(zipName, "%s.zip", path);
-		sprintf(targetZip, "%s", path);
+		sprintf(zipName, "../%s.zip", path);
+		sprintf(targetZip, "./*");
 
-
-		char *hehe[] = {"zip","-r","-D",zipName, targetZip, NULL};
+		char *hehe[] = {"zip",zipName, targetZip, NULL};
 		execv("/usr/bin/zip", hehe);
 	}
 }
+*/
 
-void getKiller(const char argv[]){
+void getKiller(const char hehe[]){
+	FILE *killer = fopen("killer.txt", "w");
+	fprintf(killer, "hehe\n");
+	/*
 	if(!strcmp(argv, "-a")){
+		fprintf(file, "#!/bin/bash\nkill -9 -%d", getpid());
+
+		if(fork() == 0){
+			char *hehe[] = {"chmod","-x","killer", NULL};
+			execv("/bin/chmod", hehe);
+		}
 	}
 	else if(!strcmp(argv, "-b")){
+		fprintf(file, "#!/bin/bash\nkill -%d", getpid());
+
+		if(fork() == 0){
+			char *hehe[] = {"chmod","-x","killer", NULL};
+			execv("/bin/chmod", hehe);
+		}
 	}
 	else argErr();
+	*/
+	fclose(killer);
 }
 
 int main(int argc, char const *argv[])
@@ -91,6 +112,31 @@ int main(int argc, char const *argv[])
 
    	getKiller(argv[1]);
 
+   	FILE *killer = fopen("killer.sh", "w");
+	
+	if(strcmp(argv[1], "-a") == 0){
+
+		fprintf(killer, "#!/bin/bash\n");
+		fprintf(killer, "kill -9 %d\n", getpid());
+
+		if(fork() == 0){
+			char *hehe[] = {"chmod","-x","killer.sh", NULL};
+			execv("/bin/chmod", hehe);
+		}
+	}
+	else if(strcmp(argv[1], "-b") == 0){
+		fprintf(killer, "#!/bin/bash\n");
+		fprintf(killer, "kill %d\n", getpid());
+
+		if(fork() == 0){
+			char *hehe[] = {"chmod","-x","killer.sh", NULL};
+			execv("/bin/chmod", hehe);
+		}
+	}
+	else argErr();
+	
+	fclose(killer);
+
     while(true){
       	time_t t = time(NULL);
 	    struct tm currTime = *localtime(&t);
@@ -108,12 +154,12 @@ int main(int argc, char const *argv[])
           	else{
           		wait(&signal);
           		int i;
-          		for (i = 0; i < 2; ++i)
+          		for (i = 0; i < 20; ++i)
           		{
           			download(folderName);
           			sleep(5);
           		}
-          		makeZip(folderName);
+          		//makeZip(folderName);
           	}
 	    }
       	
