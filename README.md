@@ -179,6 +179,8 @@ sleep(comMIN(nextIn, 5));
 ```
 Pada pengerjaan soal 1 ini terjadi kendala yaitu lupa dengan parameter * sehingga dilakukan revisi serta pada daemon,  pesan argumen berjalan dalam background sehingga tidak nampak oleh pengguna bila terjadi error.
 
+![Screenshot from 2020-03-21 20-23-38](https://user-images.githubusercontent.com/57692117/77227301-e8f56080-6bb1-11ea-8eaf-70fa20e0ad0e.png)
+
 ## Soal 2
 Pada soal 2, diminta untuk membuat sebuah program daemon yang membuat folder setiap 30 detik dan mendownload 20 gambar dimana tiap gambar didownload setiap 5 detik. Kemudian setelah lengkap, folder tersebut di zip. Selain itu program tersebut dapat membuat program killer dengan 2 mode -a dan -b dimana mode -a akan langsung menghentikan semua operasi dan -b akan menunggu hingga seluruh folder terzip. Program berjalan di background.
 Pertama, dilakukan pengecekan argumen yang nantinya digunakan untuk membuat program killer. Untuk mode -a maka, program killer akan langsung melakukan kill pada child dengan argumen parent pid-nya dan melakukan kill pada program utama. Sedangkan untuk mode -b hanya akan melakukan kill pada program utama dan membiarkan child berjalan hingga selesai.
@@ -285,6 +287,13 @@ Pada fungsi zip tersebut, diberikan parameter -m yang menyatakan bahwa setiap fi
 
 Kendala yang dirasakan yaitu mengalami kesulitan saat membuat zip dan membuat killer sempat kesulitan karena pada fungsi download sempat melakukan fork yang tidak diakhiri dengan exec family sehingga pada child tidak berhenti dan kembali mengeksekusi program utama kembali sehingga tidak dapat dikill dengan pid.
 
+![Screenshot from 2020-03-21 20-26-27](https://user-images.githubusercontent.com/57692117/77227409-c31c8b80-6bb2-11ea-9e04-70286f49a8ad.png)
+![Screenshot from 2020-03-21 20-26-53](https://user-images.githubusercontent.com/57692117/77227415-c879d600-6bb2-11ea-80ba-b36aaba5796a.png)
+![Screenshot from 2020-03-21 20-27-27](https://user-images.githubusercontent.com/57692117/77227416-cc0d5d00-6bb2-11ea-8393-b9ebf77c3789.png)
+![Screenshot from 2020-03-21 20-28-08](https://user-images.githubusercontent.com/57692117/77227418-cdd72080-6bb2-11ea-97b0-fa778f1c6054.png)
+![Screenshot from 2020-03-21 20-29-11](https://user-images.githubusercontent.com/57692117/77227421-d29bd480-6bb2-11ea-9860-a55e48a1f03e.png)
+
+
 ## Soal 3
 Pada soal 3, diminta untuk membuat 2 folder yaitu indomie dan 5 detik kemudian membuat folder sedaap. Kemudian melakukan extract pada jpg.zip yang ada di drive. Setelah itu dikelompokkan antara file dan folder dimana folder dipindahkan ke indomie dan file dipindah ke sedaap. Untuk setiap folder yang dipindahkan, membuat file kosong coba1.txt dan 3 detik kemudian membuat file coba2.txt.
 
@@ -376,3 +385,11 @@ else{
 }
 ```
 Kendala : Pada soal 3 belum ditemukan kendala yang dirasakan
+
+![Screenshot from 2020-03-21 20-34-18](https://user-images.githubusercontent.com/57692117/77227539-961ca880-6bb3-11ea-856d-457c50c92d39.png)
+![Screenshot from 2020-03-21 20-34-31](https://user-images.githubusercontent.com/57692117/77227543-9ae15c80-6bb3-11ea-843b-7485ef0352bd.png)
+![Screenshot from 2020-03-21 20-34-48](https://user-images.githubusercontent.com/57692117/77227544-9d43b680-6bb3-11ea-9160-d360cdb29d6d.png)
+![Screenshot from 2020-03-21 20-35-04](https://user-images.githubusercontent.com/57692117/77227546-9fa61080-6bb3-11ea-9980-b33d64e9604d.png)
+![Screenshot from 2020-03-21 20-35-18](https://user-images.githubusercontent.com/57692117/77227547-a2a10100-6bb3-11ea-9b82-7f655e6a8023.png)
+![Screenshot from 2020-03-21 20-35-34](https://user-images.githubusercontent.com/57692117/77227552-a92f7880-6bb3-11ea-9f1f-e297918940ce.png)
+
