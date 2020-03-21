@@ -286,3 +286,117 @@ Pada fungsi zip tersebut, diberikan parameter -m yang menyatakan bahwa setiap fi
 Kendala yang dirasakan yaitu mengalami kesulitan saat membuat zip dan membuat killer sempat kesulitan karena pada fungsi download sempat melakukan fork yang tidak diakhiri dengan exec family sehingga pada child tidak berhenti dan kembali mengeksekusi program utama kembali sehingga tidak dapat dikill dengan pid.
 
 ## Soal 3
+Pada soal 3, diminta untuk membuat 2 folder yaitu indomie dan 5 detik kemudian membuat folder sedaap. Kemudian melakukan extract pada jpg.zip yang ada di drive. Setelah itu dikelompokkan antara file dan folder dimana folder dipindahkan ke indomie dan file dipindah ke sedaap. Untuk setiap folder yang dipindahkan, membuat file kosong coba1.txt dan 3 detik kemudian membuat file coba2.txt.
+
+Untuk membuat direktori, maka dilakukan dengan melakukan exec pada program mkdir dan untuk sedaap program disleep dulu selama 5 detik.
+```
+if (child_id == 0) {
+  	if(fork() == 0){
+  		char *argv[] = {"mkdir", "/home/almond/modul2/indomie", NULL};
+		execv("/bin/mkdir", argv);
+  	}
+  	else{
+  		sleep(5);
+  		char *argv[] = {"mkdir", "/home/almond/modul2/sedaap", NULL};
+		execv("/bin/mkdir", argv);
+  	}
+}
+```
+Pada program utama menunggu folder berhasil dibuat terlebih dahulu agar nantinya tidak akan terjadi error. Kemudian dilakukan unzip sebagai berikut.
+```
+if(fork() == 0){
+    char *argv[] = {"unzip","-q","-o","/home/almond/modul2/jpg","-d","/home/almond/modul2/", NULL};
+	execv("/usr/bin/unzip", argv);
+}
+```
+Selanjutnya dilakukan sortir dari hasil unzip tersebut.
+```
+    else{
+	    	wait(&boom);
+	    	char currDir[100];
+	    	char fullPath[500];
+	    	strcat(currDir, myWorkdir);
+	    	strcat(currDir,"jpg/");
+
+	    	DIR* dir = opendir(currDir);
+	    	DIR* pathDir;
+	    	FILE* path;
+	    	struct dirent* ls;
+  			while ((ls = readdir (dir))) {
+  				if(strcmp(ls->d_name, ".") !=0 && strcmp(ls->d_name,"..") != 0){
+  					sprintf(fullPath, "%s%s", currDir, ls->d_name);
+
+	    			pathDir = opendir(fullPath);
+					path = fopen(fullPath,"r");
+
+					if(pathDir){ // untuk Direktori
+						if(fork() == 0){
+							int boom2;
+							if(fork() == 0){
+								char *argv[] = {"mv", fullPath ,"/home/almond/modul2/indomie", NULL};
+								execv("/bin/mv", argv);
+							}
+							else{
+								wait(&boom2);
+								int boom3;
+								if(fork() == 0){
+									sprintf(fullPath,"%sindomie/%s/coba1.txt", myWorkdir, ls->d_name);
+									char *argv[] = {"touch", fullPath ,"/home/almond/modul2/indomie", NULL};
+									execv("/bin/touch", argv);
+								}
+								else{
+									wait(&boom3);
+									sleep(3);
+									sprintf(fullPath,"%sindomie/%s/coba2.txt", myWorkdir, ls->d_name);
+									char *argv[] = {"touch", fullPath ,"/home/almond/modul2/indomie", NULL};
+									execv("/bin/touch", argv);
+								}
+							}
+						}
+					}
+					else if(path){ //file
+						if(fork() == 0){
+							char *argv[] = {"mv", fullPath ,"/home/almond/modul2/sedaap", NULL};
+							execv("/bin/mv", argv);
+						}
+					}
+
+					closedir(pathDir);
+					fclose(path);
+  				}
+  			}		
+```
+
+Pada saat melakukan exec program unzip, program utama masih menunggu hingga selanjutnya dilakukan sortir antara direktori dan file. Untuk sortir ini dilakukan dengan cara pengecekan file seperti pada soal 1 yaitu dengan pointer DIR dan pointer FILE. Untuk membaca direktori tersebut digunakan loop dengan ```while(ls = readdir(dir))``` dimana akan membaca direktori satu persatu dan karena direktori ```.``` dan ```..``` tidak termasuk maka diberi branching ```if(strcmp(ls->d_name, ".") !=0 && strcmp(ls->d_name,"..") != 0)```. Untuk setiap direktori maka pathDir akan bernilai true bila direktori tersebut merupakan folder sedangkan untuk path akan bernilai true untuk setiap folder dan file sehingga dilakukan ```if(pathDir)``` terlebih dahulu baru ```else if(path)```.  
+Kemudian dilakukan exec pada program mv untuk folder sebagai berikut.
+```
+if(fork() == 0){
+	char *argv[] = {"mv", fullPath ,"/home/almond/modul2/indomie", NULL};
+	execv("/bin/mv", argv);
+}
+```
+dan untuk file sebagai berikut.
+```
+if(fork() == 0){
+	char *argv[] = {"mv", fullPath ,"/home/almond/modul2/sedaap", NULL};
+	execv("/bin/mv", argv);
+}
+```
+Untuk tiap folder, tidak lupa dibuatkan file coba1.txt dan sleep dulu selama 3 detik sebelum membuat coba2.txt. Sebelumnya dilakukan menunggu dulu hingga folder berhasil dipindahkan
+```
+wait(&boom2);
+int boom3;
+if(fork() == 0){
+	sprintf(fullPath,"%sindomie/%s/coba1.txt", myWorkdir, ls->d_name);
+	char *argv[] = {"touch", fullPath ,"/home/almond/modul2/indomie", NULL};
+	execv("/bin/touch", argv);
+}
+else{
+	wait(&boom3);
+	sleep(3);
+	sprintf(fullPath,"%sindomie/%s/coba2.txt", myWorkdir, ls->d_name);
+	char *argv[] = {"touch", fullPath ,"/home/almond/modul2/indomie", NULL};
+	execv("/bin/touch", argv);
+}
+```
+Kendala : Pada soal 3 belum ditemukan kendala yang dirasakan
