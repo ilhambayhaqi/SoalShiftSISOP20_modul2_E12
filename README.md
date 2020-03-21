@@ -311,60 +311,36 @@ if(fork() == 0){
 ```
 Selanjutnya dilakukan sortir dari hasil unzip tersebut.
 ```
-    else{
-	    	wait(&boom);
-	    	char currDir[100];
-	    	char fullPath[500];
-	    	strcat(currDir, myWorkdir);
-	    	strcat(currDir,"jpg/");
+else{
+	wait(&boom);
+	char currDir[100];
+	char fullPath[500];
+	strcat(currDir, myWorkdir);
+	strcat(currDir,"jpg/");
+	
+	DIR* dir = opendir(currDir);
+	DIR* pathDir;
+	FILE* path;
+	struct dirent* ls;
+	while ((ls = readdir (dir))) {
+		if(strcmp(ls->d_name, ".") !=0 && strcmp(ls->d_name,"..") != 0){
+			sprintf(fullPath, "%s%s", currDir, ls->d_name);
+			
+			pathDir = opendir(fullPath);
+			path = fopen(fullPath,"r");
+			
+			if(pathDir){ // untuk Direktori
+				/*code*/
+			}	
+			else if(path){ //file
+				/*code*/
+			}
 
-	    	DIR* dir = opendir(currDir);
-	    	DIR* pathDir;
-	    	FILE* path;
-	    	struct dirent* ls;
-  			while ((ls = readdir (dir))) {
-  				if(strcmp(ls->d_name, ".") !=0 && strcmp(ls->d_name,"..") != 0){
-  					sprintf(fullPath, "%s%s", currDir, ls->d_name);
-
-	    			pathDir = opendir(fullPath);
-					path = fopen(fullPath,"r");
-
-					if(pathDir){ // untuk Direktori
-						if(fork() == 0){
-							int boom2;
-							if(fork() == 0){
-								char *argv[] = {"mv", fullPath ,"/home/almond/modul2/indomie", NULL};
-								execv("/bin/mv", argv);
-							}
-							else{
-								wait(&boom2);
-								int boom3;
-								if(fork() == 0){
-									sprintf(fullPath,"%sindomie/%s/coba1.txt", myWorkdir, ls->d_name);
-									char *argv[] = {"touch", fullPath ,"/home/almond/modul2/indomie", NULL};
-									execv("/bin/touch", argv);
-								}
-								else{
-									wait(&boom3);
-									sleep(3);
-									sprintf(fullPath,"%sindomie/%s/coba2.txt", myWorkdir, ls->d_name);
-									char *argv[] = {"touch", fullPath ,"/home/almond/modul2/indomie", NULL};
-									execv("/bin/touch", argv);
-								}
-							}
-						}
-					}
-					else if(path){ //file
-						if(fork() == 0){
-							char *argv[] = {"mv", fullPath ,"/home/almond/modul2/sedaap", NULL};
-							execv("/bin/mv", argv);
-						}
-					}
-
-					closedir(pathDir);
-					fclose(path);
-  				}
-  			}		
+			closedir(pathDir);
+			fclose(path);
+		}
+  	}
+}		
 ```
 
 Pada saat melakukan exec program unzip, program utama masih menunggu hingga selanjutnya dilakukan sortir antara direktori dan file. Untuk sortir ini dilakukan dengan cara pengecekan file seperti pada soal 1 yaitu dengan pointer DIR dan pointer FILE. Untuk membaca direktori tersebut digunakan loop dengan ```while(ls = readdir(dir))``` dimana akan membaca direktori satu persatu dan karena direktori ```.``` dan ```..``` tidak termasuk maka diberi branching ```if(strcmp(ls->d_name, ".") !=0 && strcmp(ls->d_name,"..") != 0)```. Untuk setiap direktori maka pathDir akan bernilai true bila direktori tersebut merupakan folder sedangkan untuk path akan bernilai true untuk setiap folder dan file sehingga dilakukan ```if(pathDir)``` terlebih dahulu baru ```else if(path)```.  
