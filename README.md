@@ -180,9 +180,109 @@ sleep(comMIN(nextIn, 5));
 Pada pengerjaan soal 1 ini terjadi kendala yaitu lupa dengan parameter * sehingga dilakukan revisi serta pada daemon,  pesan argumen berjalan dalam background sehingga tidak nampak oleh pengguna bila terjadi error.
 
 ## Soal 2
+Pada soal 2, diminta untuk membuat sebuah program daemon yang membuat folder setiap 30 detik dan mendownload 20 gambar dimana tiap gambar didownload setiap 5 detik. Kemudian setelah lengkap, folder tersebut di zip. Selain itu program tersebut dapat membuat program killer dengan 2 mode -a dan -b dimana mode -a akan langsung menghentikan semua operasi dan -b akan menunggu hingga seluruh folder terzip. Program berjalan di background.
+Pertama, dilakukan pengecekan argumen yang nantinya digunakan untuk membuat program killer. Untuk mode -a maka, program killer akan langsung melakukan kill pada child dengan argumen parent pid-nya dan melakukan kill pada program utama. Sedangkan untuk mode -b hanya akan melakukan kill pada program utama dan membiarkan child berjalan hingga selesai.
+```
+if(argc != 2) argErr();
 
+FILE *killer = fopen("killer", "w");	
+if(strcmp(argv[1], "-a") == 0){
+	fprintf(killer, "#!/bin/bash\n");
+	fprintf(killer, "pkill -9 -P %d\n", getpid());
+	fprintf(killer, "kill -9 %d\n", getpid());
+	fprintf(killer, "rm ./killer");
+
+	if(fork() == 0){
+		char *hehe[] = {"chmod","+x","killer", NULL};
+		execv("/bin/chmod", hehe);
+	}
+}
+else if(strcmp(argv[1], "-b") == 0){
+	fprintf(killer, "#!/bin/bash\n");
+	fprintf(killer, "kill -9 %d\n", getpid());
+	fprintf(killer, "rm ./killer");
+
+	if(fork() == 0){
+		char *hehe[] = {"chmod","+x","killer", NULL};
+		execv("/bin/chmod", hehe);
+	}
+}
+else argErr();
+
+```
+Kemudian untuk program utama akan dilakukan loop dengan sleep setiap 30 detik. Dimana dari program utama ini akan membuat child yang akan membuat folder serta akan mendownload gambar. Program utama yang dibuat sebagai berikut.
+```
+    while(true){
+      	time_t t = time(NULL);
+	struct tm currTime = *localtime(&t);
+
+      	char folderName[100];
+      	sprintf(folderName,"%04d-%02d-%02d_%02d:%02d:%02d", currTime.tm_year + 1900,
+       		currTime.tm_mon + 1, currTime.tm_mday, currTime.tm_hour, currTime.tm_min, currTime.tm_sec);
+	if(fork() == 0){
+		/*code*/ //program anak yang akan membuat folder dan mendownload gambar dan membuat zip.
+	}
+      	sleep(30);
+    }
+```
+Untuk membuat folder maka dilakukan sebagai berikut.
+```
+if(fork() == 0){
+	char *argv[] = {"mkdir", folderName, NULL};
+        execv("/bin/mkdir", argv);
+}
+```
+Sedangkan untuk mendownload dan melakukan zip dilakukan setelah folder berhasil dibuat sehingga perlu menunggu signal.
+```
+else{
+	wait(&signal);
+        int i;
+        for (i = 0; i < 20; ++i){
+        	download(folderName, &signal);
+          	sleep(5);
+        }
+        wait(&signal);
+        makeZip(folderName);
+}
+```
+Dari potongan kode diatas, terdapat fungsi download yang merupakan fungsi untuk melakukan download dan makeZip yang akan membuat zip dari folder tersebut setelah mendapat signal dari download selesai. Untuk kode yang digunakan download sebagai berikut.
+```
+void download(char path[], int *signal){
+	time_t t = time(NULL);
+	int width = (int)(t % 1000) + 100;
+	
+	struct tm currTime = *localtime(&t);
+	if(fork() == 0){
+		char link[100], fileName[100], currFileName[100];
+		sprintf(link,"https://picsum.photos/%d", width);
+		sprintf(path,"%s/", path);
+      	sprintf(fileName,"%s%04d-%02d-%02d_%02d:%02d:%02d", path ,currTime.tm_year + 1900,
+       		currTime.tm_mon + 1, currTime.tm_mday, currTime.tm_hour, currTime.tm_min, currTime.tm_sec);
+      	sprintf(currFileName, "%s%d", path,width);
+		
+		char *hehe[] = {"wget","-q","-o", "/dev/null" ,"-P", path, "-O", fileName ,link, NULL};
+		execv("/usr/bin/wget", hehe);
+	}
+}
+```
+Pada download tersebut, dilakukan penghitungan dari width gambar dengan ```int width = (int)(t % 1000) + 100;```  kemudian membuat anak untuk mendownload gambar pada link yang diberikan. Pada kode tersebut untuk wget diberikan parameter -q yaitu quiet mode, -o untuk mengirim log pada /dev/null atau tidak menyimpan log, -P merupakan path download dan -O yang merupakan nama file yang akan diberikan. Sedangkan untuk fungsi zip sebagai berikut.
+```
+void makeZip(char path[]){
+	char dir[100];
+	sprintf(dir, "./%s", path);
+	
+	int boom;
+
+	char zipName[100], targetZip[100];
+	sprintf(zipName, "%s.zip", path);
+	sprintf(targetZip, "%s/",path);
+
+	char *hehe[] = {"zip","-mrq",zipName, targetZip,NULL};
+	execv("/usr/bin/zip", hehe);
+}
+```
+Pada fungsi zip tersebut, diberikan parameter -m yang menyatakan bahwa setiap file atau direktori yang di-add pada zip akan dihapus, -r yaitu melakukan rekursif dari direktori yang diberikan serta -q untuk quiet mode.
+
+Kendala yang dirasakan yaitu mengalami kesulitan saat membuat zip dan membuat killer sempat kesulitan karena pada fungsi download sempat melakukan fork yang tidak diakhiri dengan exec family sehingga pada child tidak berhenti dan kembali mengeksekusi program utama kembali sehingga tidak dapat dikill dengan pid.
 
 ## Soal 3
-Kendala  
-Untuk soal 2, belum selesai zipnya dan killer masih bug.  
-Belum cukup waktunya untuk menyelesaikan
