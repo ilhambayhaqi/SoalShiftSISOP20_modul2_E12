@@ -51,6 +51,14 @@ bool toParse(const char* argv, bool t[], int maximum){
 			if(isA) isA = false; 
 			else return false;
 		}
+		else if(temp == '*'){
+			if(isA){
+				a = 0;
+				b = maximum-1;
+				isValid(a,b, maximum, t);
+			}
+			else return false;
+		}
 		else if(isdigit(temp) != 0){
 			if(isA) a = a * 10 + (int)(temp - '0');
 			else{
@@ -138,7 +146,19 @@ void fileErr(){
 }
 
 int main(int argc, char const *argv[])
-{
+{	
+
+  	bool sec[60] = {false};
+  	bool min[60] = {false};
+  	bool hour[24] = {false};
+
+  	if(argc != 5) argErr();
+  	if(!toParse(argv[1], sec, 60)) argErr();
+  	if(!toParse(argv[2], min, 60)) argErr();
+  	if(!toParse(argv[3], hour, 24)) argErr();
+
+
+	/*
 	pid_t pid, sid;
   	pid = fork();
   	if (pid < 0) exit(EXIT_FAILURE);
@@ -152,15 +172,7 @@ int main(int argc, char const *argv[])
   	close(STDIN_FILENO);
   	close(STDOUT_FILENO);
   	close(STDERR_FILENO); 
-
-  	bool sec[60] = {false};
-  	bool min[60] = {false};
-  	bool hour[24] = {false};
-
-  	if(argc != 5) argErr();
-  	if(!toParse(argv[1], sec, 60)) argErr();
-  	if(!toParse(argv[2], min, 60)) argErr();
-  	if(!toParse(argv[3], hour, 24)) argErr();
+  	*/
 
   	DIR* dir = opendir(argv[4]);
   	FILE* path = fopen(argv[4],"r");
